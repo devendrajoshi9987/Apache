@@ -1,176 +1,36 @@
-Compile Apache 2.4.6 From Source in CentOS 6.4
+-----------------------------------------------------------------------------------------------------
+Compile Apache 2.4 from Source in CentOS release 6.7 & Kernel 2.6.32-696
+-----------------------------------------------------------------------------------------------------
+
+yum install gcc zlib zlib-devel openssl openssl-devel gcc-c++ ncurses-devel gcczlib zlib-devel pcre-devel expat-devel
+
+mkdir /softwares
+cd /softwares
+
+wget http://apache.mirrors.tds.net/httpd/httpd-2.4.32.tar.gz
+wget https://www.apache.org/dist/apr/apr-1.6.3.tar.gz
+wget https://www.apache.org/dist/apr/apr-util-1.6.1.tar.gz
+
+tar -zxvf httpd-2.4.32.tar.gz
+
+cp apr-1.6.3.tar.gz /softwares/httpd-2.4.32/srclib/
+cp apr-util-1.6.1.tar.gz /softwares/httpd-2.4.32/srclib/
+
+cd  /softwares/httpd-2.4.32/srclib/
+
+tar -zxvf apr-1.6.3.tar.gz
+tar -zxvf apr-util-1.6.1.tar.gz
+
+mv apr-1.6.3 apr
+mv apr-util-1.6.1 apr-util
+
+rm -rf apr-1.6.3.tar.gz
+rm -rf apr-util-1.6.1.tar.gz
 
 
+tar -zxvf httpd-2.4.32.tar.gz
+./configure --prefix=/opt/apache  --enable-mods-shared=all --enable-ssl --enable-deflate --enable-info --enable-proxy --enable-rewrite --enable-vhost-alias --enable-headers --enable-expires --with-included-apr
 
-#----------------------------------------------------------------------------------
-# CHANGES START
-#----------------------------------------------------------------------------------
-export PATH=/opt/apache/bin:$PATH
-export PATH=/opt/mysql/bin:$PATH
-export PATH=/opt/php/bin:$PATH
-alias c='clear'
-alias df='df -Th'
-#----------------------------------------------------------------------------------
-# CHANGES END
-#----------------------------------------------------------------------------------
-
-
-
-----------------------------------------------------------------------------------------
-1) Stop unwamted Services or settings
-----------------------------------------------------------------------------------------
-# /etc/init.d/NetworkManager stop
-# chkconfig NetworkManager off
-Note: Make sure you have configured Network i.e. (IP Address/Netmask/Gateway/DNS)
-
-# /etc/init.d/sendmail stop
-# chkconfig sendmail off
-# vi /etc/sysconfig/selinux
-SELINUX=disabled
-
-------------------------------------------
-Upgrade Kernel Version
-------------------------------------------
-#yum update kernel
-
-
-Reboot The Server
-
-
-
-----------------------------------------------------------------------------------------
-3) Install Require Packages and dependencies and verify 
-----------------------------------------------------------------------------------------
-
-yum -y install apr-devel apr-util-devel pcre pcre-devel 
-
-yum -y install autoconf libtool doxygen expat expat-devel libuuid-devel db4-devel mysql-devel unixODBC-devel postgresql-devel sqlite-devel pcre pcre-devel lua-devel libxml2-devel openldap-devel nss-devel
-(Ref:http://www.virtualitworld.co.in/install-apache-2-4-4-in-centos-6-4/)
-
-yum install wget rpm-build autoconf zlib-devel libselinux-devel libuuid-devel pcre-devel openldap-devel lua-devel libxml2-devel distcache-devel openssl-devel apr-devel postgresql-devel mysql-devel sqlite-devel freetds-devel unixODBC-devel nss-devel distcache-devel expat-devel db4-devel mailcap libtool doxygen
-(Ref:http://geekpeek.net/apache-2-4-9-rpm-centos/)
-
-# yum groupinstall "Development Tools"
-
-
-# yum install zlib*
-# yum install libtool*
-# yum install gcc*
-
-
-----------------------------------------------------------------------------------------
-4) Install & Configure APR & APR Utils
-----------------------------------------------------------------------------------------
-# APR
-#wget http://mirrors.axint.net/apache//apr/apr-1.4.6.tar.gz
-tar -xvzf apr-1.4.6.tar.gz
-cd apr-1.4.6/
-./configure
 make
 make install
-cd ..
-
-If there is Error Like : config.status: executing libtool commands
-rm: cannot remove `libtoolT': No such file or directory
-
-
-Then Do Following
-
-#vi configure
-
-Search $RM "$cfgfile"  & Replace with $RM -f "$cfgfile"
-
-Then again type ./confgure Command.
-
-Ref:http://stackoverflow.com/questions/18091991/error-while-compiling-apache-apr-make-file-not-found
-
-
-
-
-
-
-
-# APR Utils
-wget http://mirrors.axint.net/apache//apr/apr-util-1.4.1.tar.gz
-
-tar -xvzf apr-util-1.4.1.tar.gz
-cd apr-util-1.4.1
-./configure --with-apr=/usr/local/apr
-make
-make install
-cd ..
-
-
-
-
-
-#/etc/init.d/httpd stop
-#chkconfig httpd off
-#mkdir  /softwares
-#cd /softwares/
-#wget "http://archive.apache.org/dist/httpd/httpd-2.4.6.tar.gz"
-#tar -zxvf httpd-2.4.6.tar.gz
-#cd httpd-2.4.6
-
-
-----------------------------------------------------------------------------------------
-Note 
-----------------------------------------------------------------------------------------
-we will install Apache with all default modules, 
-with addition of –enable-ssl (to install mod_ssl for SSL support), 
-and –enable-so, which helps to load modules in Apache during run-time via the Dynamic Shared Object (DSO) mechanism, 
-rather than requiring a recompilation.
-
-
-I use ./configure  --prefix=/opt/apache --with-apr=/usr/local/apr/ --enable-ssl --enable-so
-But i got Following erro then i use following command with apt-util parameter.
-
-./configure  --prefix=/opt/apache --with-apr=/usr/local/apr/ --with-apr-util=/usr/local/apr/ --enable-ssl --enable-so
-
-
-
-There is Error While make,
-
-Error is
-
-exports.c:1955: note: previous definition of 'ap_hack_apu_version' was here
-exports.c:3001: error: redefinition of 'ap_hack_apu_version_string'
-exports.c:1956: note: previous definition of 'ap_hack_apu_version_string' was here
-make[2]: *** [exports.lo] Error 1
-make[2]: Leaving directory `/softwares/httpd-2.4.6/server'
-make[1]: *** [all-recursive] Error 1
-make[1]: Leaving directory `/softwares/httpd-2.4.6/server'
-make: *** [all-recursive] Error 1
-
-
-So I make changes in ./configure prefix. I added --with-apr-util component
-
-./configure  --prefix=/opt/apache --with-apr=/usr/local/apr/ --with-apr-util=/usr/local/apr/ --enable-ssl --enable-so
-
-Ref: https://forums.opensuse.org/showthread.php/417366-Apache-compilation
-
-
-
-#make
-#make install
-#rm -rf /softwares/httpd-2.4.6
- 
-
-#vi /opt/apache/conf/httpd.conf
-
-User apache
-Group apache
-Include conf/php.conf
-
-
-#cp /etc/httpd/modules/libphp5* /opt/apache/modules/
-#cp /etc/httpd/conf.d/php.conf /opt/apache/conf/
-#/opt/apache/bin/apachectl -k restart
-
-
-
-
-
-
-#Use httpd -l to view all the modules that are compiled inside the Apache httpd daemon.
-# /opt/apache/bin/httpd -l
+/opt/apache/bin/apachectl -k start
